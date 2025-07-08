@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"fr.maxlego08.itemstacker.api","l":"ItemManager"},{"p":"fr.maxlego08.itemstacker.api","l":"StackedItem"},{"p":"fr.maxlego08.itemstacker.api","l":"TranslationManager"}];updateSearchResults();
