@@ -90,6 +90,11 @@ public class ZTranslationManager implements TranslationManager {
         this.materialToKeys.forEach((key, value) -> this.keyToMaterials.put(value, key.name()));
 
         Map<?, ?> map = plugin.getPersist().load(Map.class, file);
+        if (map == null) {
+            plugin.getLogger().warning("Unable to load translations from " + file.getName() + ". Using fallback item names.");
+            return;
+        }
+
         map.forEach((k, v) -> {
             if (k instanceof String key && v instanceof String value) {
                 if (key.startsWith("block") || key.startsWith("item")) {

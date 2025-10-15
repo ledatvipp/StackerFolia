@@ -22,9 +22,13 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Optional;
 
 public class ZItemManager extends ZUtils implements ItemManager {
+
+    private static final Method FOLIA_TICK_CHECK_METHOD = findTickThreadMethod();
 
     private final ItemStackerPlugin plugin;
 
@@ -196,12 +200,38 @@ public class ZItemManager extends ZUtils implements ItemManager {
         }
     }
 
+    private static Method findTickThreadMethod() {
+        try {
+            Class<?> tickThreadClass = Class.forName("io.papermc.paper.threadedregions.TickThread");
+            return tickThreadClass.getMethod("isTickThreadFor", Entity.class);
+        } catch (ClassNotFoundException | NoSuchMethodException ignored) {
+            return null;
+        }
+    }
+
+    private boolean isSameTickThread(Entity entity) {
+        Method method = FOLIA_TICK_CHECK_METHOD;
+        if (method == null) {
+            return true;
+        }
+
+        try {
+            return (boolean) method.invoke(null, entity);
+        } catch (IllegalAccessException | InvocationTargetException ignored) {
+            return false;
+        }
+    }
+
     private Optional<StackedItem> getNearbyItems(Location location, ItemStack itemStack) {
 
         World world = location.getWorld();
-        Optional<Entity> optional = world.getNearbyEntities(location, Config.distanceOnDrop, Config.distanceOnDrop, Config.distanceOnDrop).parallelStream().filter(entity -> entity instanceof Item && ((Item) entity).getItemStack().isSimilar(itemStack)).findFirst();
+        for (Entity entity : world.getNearbyEntities(location, Config.distanceOnDrop, Config.distanceOnDrop, Config.distanceOnDrop)) {
+            if (entity instanceof Item nearbyItem && isSameTickThread(nearbyItem) && nearbyItem.getItemStack().isSimilar(itemStack)) {
+                return Optional.of(getItem(nearbyItem));
+            }
+        }
 
-        return optional.map(entity -> getItem((Item) entity));
+        return Optional.empty();
     }
 
     private EquipmentSlot getEquipmentSlot(EntityEquipment entityEquipment, ItemStack itemStack) {
