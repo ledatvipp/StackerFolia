@@ -2,6 +2,8 @@ package fr.maxlego08.itemstacker.zcore;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.tcoded.folialib.FoliaLib;
+import com.tcoded.folialib.impl.PlatformScheduler;
 import fr.maxlego08.itemstacker.ItemStackerPlugin;
 import fr.maxlego08.itemstacker.command.CommandManager;
 import fr.maxlego08.itemstacker.command.VCommand;
@@ -63,6 +65,11 @@ public abstract class ZPlugin extends JavaPlugin {
     private Persist persist;
 
     /**
+     * Folia scheduler wrapper.
+     */
+    private FoliaLib foliaLib;
+
+    /**
      * The time when the plugin is enabled.
      */
     private long enableTime;
@@ -87,6 +94,8 @@ public abstract class ZPlugin extends JavaPlugin {
         this.persist = new Persist(this);
 
         this.commandManager = new CommandManager((ItemStackerPlugin) this);
+
+        this.foliaLib = new FoliaLib(this);
     }
 
     /**
@@ -168,6 +177,14 @@ public abstract class ZPlugin extends JavaPlugin {
 
     public Persist getPersist() {
         return persist;
+    }
+
+    public FoliaLib getFoliaLib() {
+        return foliaLib;
+    }
+
+    public PlatformScheduler getScheduler() {
+        return foliaLib.getScheduler();
     }
 
     /**
