@@ -27,6 +27,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.permissions.Permissible;
+import fr.maxlego08.itemstacker.zcore.ZPlugin;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.potion.PotionEffectType;
@@ -388,7 +389,11 @@ public abstract class ZUtils extends MessageUtils {
                 }
 
                 tmpCount++;
-                Bukkit.getScheduler().runTask(plugin, runnable);
+                if (plugin instanceof ZPlugin zPlugin) {
+                    zPlugin.getScheduler().runNextTick(task -> runnable.run());
+                } else {
+                    Bukkit.getScheduler().runTask(plugin, runnable);
+                }
             }
         }, 0, delay);
     }
@@ -445,7 +450,11 @@ public abstract class ZUtils extends MessageUtils {
                     consumer.accept(this, false);
                     return;
                 }
-                Bukkit.getScheduler().runTask(plugin, () -> consumer.accept(this, true));
+                if (plugin instanceof ZPlugin zPlugin) {
+                    zPlugin.getScheduler().runNextTick(task -> consumer.accept(this, true));
+                } else {
+                    Bukkit.getScheduler().runTask(plugin, () -> consumer.accept(this, true));
+                }
             }
         };
         new Timer().scheduleAtFixedRate(task, startAt, delay);
@@ -922,7 +931,11 @@ public abstract class ZUtils extends MessageUtils {
      * @param runnable the runnable to execute.
      */
     protected void runAsync(Plugin plugin, Runnable runnable) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, runnable);
+        if (plugin instanceof ZPlugin zPlugin) {
+            zPlugin.getScheduler().runAsync(task -> runnable.run());
+        } else {
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, runnable);
+        }
     }
 
 

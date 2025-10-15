@@ -30,6 +30,7 @@ allprojects {
         maven(url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
         maven(url = "https://repo.extendedclip.com/content/repositories/placeholderapi/")
         maven(url = "https://libraries.minecraft.net/")
+        maven(url = "https://repo.tcoded.com/releases")
     }
 
     java {
@@ -64,6 +65,8 @@ allprojects {
         exclude("com/cryptomorin/xseries/ReflectionUtils*")
         exclude("com/cryptomorin/xseries/XWorldBorder*")
 
+        relocate("com.tcoded.folialib", "fr.maxlego08.itemstacker.lib.folialib")
+
         archiveBaseName.set("zItemStacker")
         archiveAppendix.set(if (project.path == ":") "" else project.name)
         archiveClassifier.set("")
@@ -92,6 +95,7 @@ repositories {
 
 dependencies {
     api(projects.api)
+    implementation("com.tcoded:FoliaLib:0.5.1")
     // api(projects.hooks)
 }
 

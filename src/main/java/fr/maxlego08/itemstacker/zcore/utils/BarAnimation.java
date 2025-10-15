@@ -6,19 +6,22 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
+
+import com.tcoded.folialib.wrapper.task.WrappedTask;
+
+import fr.maxlego08.itemstacker.zcore.ZPlugin;
 
 import java.util.List;
 
 /**
  * Creates and manages a smooth BossBar animation for a group of players.
- * Extends {@link BukkitRunnable} to handle the timing and updates of the BossBar.
  */
-public class BarAnimation extends BukkitRunnable {
+public class BarAnimation {
 
     private final BossBar bossBar;
     private final double totalTime;
     private double remainingTime;
+    private final WrappedTask task;
 
     /**
      * Creates a new smooth BossBar animation for a group of players.
@@ -39,22 +42,17 @@ public class BarAnimation extends BukkitRunnable {
         }
 
         this.bossBar.setVisible(true);
-        // Schedule the task to run every tick (1L) for the smoothest animation
-        this.runTaskTimer(JavaPlugin.getProvidingPlugin(getClass()), 0L, 1L);
+        ZPlugin plugin = (ZPlugin) JavaPlugin.getProvidingPlugin(getClass());
+        this.task = plugin.getScheduler().runTimer(this::tick, 0L, 1L);
     }
 
-    /**
-     * The task to run on each tick. Updates the BossBar's progress.
-     * Cancels the task and removes the BossBar when the time runs out.
-     */
-    @Override
-    public void run() {
+    private void tick() {
         double progress = remainingTime / totalTime;
         bossBar.setProgress(progress);
 
         if (remainingTime <= 0) {
             bossBar.removeAll();
-            this.cancel(); // Stop the task when the BossBar is empty
+            task.cancel(); // Stop the task when the BossBar is empty
         }
 
         remainingTime -= 1; // Decrease by 1 tick at each update

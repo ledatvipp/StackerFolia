@@ -1,5 +1,6 @@
 package fr.maxlego08.itemstacker.zcore.utils.plugins;
 
+import fr.maxlego08.itemstacker.zcore.ZPlugin;
 import fr.maxlego08.itemstacker.zcore.enums.Message;
 import fr.maxlego08.itemstacker.zcore.logger.Logger;
 import org.bukkit.Bukkit;
@@ -7,8 +8,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.IOException;
 import java.net.URI;
@@ -27,7 +26,7 @@ public class VersionChecker implements Listener {
 
     private final String URL_API = "https://groupez.dev/api/v1/resource/version/%s";
     private final String URL_RESOURCE = "https://groupez.dev/resources/%s";
-    private final Plugin plugin;
+    private final ZPlugin plugin;
     private final int pluginID;
     private boolean isLastVersion = false;
 
@@ -37,7 +36,7 @@ public class VersionChecker implements Listener {
      * @param plugin   - The plugin
      * @param pluginID - The id of the resource in the API
      */
-    public VersionChecker(Plugin plugin, int pluginID) {
+    public VersionChecker(ZPlugin plugin, int pluginID) {
         super();
         this.plugin = plugin;
         this.pluginID = pluginID;
@@ -72,14 +71,11 @@ public class VersionChecker implements Listener {
     public void onConnect(PlayerJoinEvent event) {
         final Player player = event.getPlayer();
         if (!isLastVersion && event.getPlayer().hasPermission("zplugin.notifs")) {
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    String prefix = Message.PREFIX.getMessage();
-                    player.sendMessage(prefix + "§cYou do not use the latest version of the plugin! Thank you for taking the latest version to avoid any risk of problem!");
-                    player.sendMessage(prefix + "§fDownload plugin here: §a" + String.format(URL_RESOURCE, pluginID));
-                }
-            }.runTaskLater(plugin, 20 * 2);
+            this.plugin.getScheduler().runAtEntityLater(player, () -> {
+                String prefix = Message.PREFIX.getMessage();
+                player.sendMessage(prefix + "§cYou do not use the latest version of the plugin! Thank you for taking the latest version to avoid any risk of problem!");
+                player.sendMessage(prefix + "§fDownload plugin here: §a" + String.format(URL_RESOURCE, pluginID));
+            }, 20L * 2);
         }
     }
 
@@ -89,7 +85,7 @@ public class VersionChecker implements Listener {
      * @param consumer - Do something after
      */
     public void getVersion(Consumer<String> consumer) {
-        Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+        this.plugin.getScheduler().runAsync(task -> {
             final String apiURL = String.format(URL_API, this.pluginID);
             try {
                 URL url = URI.create(apiURL).toURL();
